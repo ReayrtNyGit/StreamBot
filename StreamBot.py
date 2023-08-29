@@ -11,7 +11,12 @@ def save_file(filepath, content):
     with open(filepath, 'w', encoding='utf-8') as outfile:
         outfile.write(content)
 
+def open_file(filepath):
+    with open(filepath, 'r', encoding='utf-8', errors='ignore') as infile:
+        return infile.read()
 
+
+rules = open_file('rules.txt')
 
 DESCRIPTION = """
 # StreamBot 🗨️
@@ -46,7 +51,7 @@ model_list=[
 
 def prompt_build(system_prompt, user_inp, hist):
     prompt=[]
-    prompt.append({'role': 'system', 'content': system_prompt})
+    prompt.append({'role': 'system', 'content': rules+system_prompt})
     
       
     for pair in hist:
