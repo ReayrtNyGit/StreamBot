@@ -11,7 +11,12 @@ def save_file(filepath, content):
     with open(filepath, 'w', encoding='utf-8') as outfile:
         outfile.write(content)
 
+def open_file(filepath):
+    with open(filepath, 'r', encoding='utf-8', errors='ignore') as infile:
+        return infile.read().replace("\n", " ")
 
+
+rules = open_file('rules.txt')
 
 DESCRIPTION = """
 # StreamBot 🗨️
@@ -31,6 +36,11 @@ MODEL_LIST_EXPLAIN = """## OPENAI System Model
 
 prompts = [
     "You are a helpful AI.",
+    "You are a Python coding assistant. The USER will give you instructions to help write functions. You may ask for clarification if needed, but otherwise you should only output Python code. Adhere to PEP8. Provide explanations of the code only if the user asks for them.",
+    open_file('email_prompt.txt'),
+    open_file('prompt_writing.txt'),
+    # open_file('healthbot4.txt'),
+    open_file('linkedin_posts.txt'),
     "You are a mean AI. Phrase all replies as insults",
     "Based on the user description and any included code write a markdown README file.",
     "As a professional writer please summerize the following text remember to; make use of clear, concise language to convey the information in a straightforward manner, avoiding unnecessary jargon or overly complex phrasing. Maintain a logical flow and coherence throughout the summary, ensuring smooth transitions between sections and chapters..",
@@ -46,7 +56,7 @@ model_list=[
 
 def prompt_build(system_prompt, user_inp, hist):
     prompt=[]
-    prompt.append({'role': 'system', 'content': system_prompt})
+    prompt.append({'role': 'system', 'content': rules+system_prompt})
     
       
     for pair in hist:
@@ -60,27 +70,37 @@ def prompt_build(system_prompt, user_inp, hist):
     
 
 def chat(user_input, history, system_prompt, model_select):
+    """
+    Generates a chat response using the OpenAI API.
 
+    Parameters:
+    user_input (str): The user's input.
+    history (str): The conversation history.
+    system_prompt (str): The system's prompt.
+    model_select (str): The model to be used.
+
+    Returns:
+    str: The model's output.
+    """
     prompt = prompt_build(system_prompt, user_input, history)
-    
 
-    streamer = openai.ChatCompletion.create(
-    model = model_select,
-    messages = prompt,
-    temperature = 0,
-    stream = True
-)
-  
+    chat_response_stream = openai.ChatCompletion.create(
+        model=model_select,
+        messages=prompt,
+        temperature=0,
+        stream=True
+    )
+
     model_output = ""
-    for event in streamer:
+    for event in chat_response_stream:
         try:
             model_output += event['choices'][0]['delta']["content"]
             yield model_output
-        except:
+        except KeyError as e:
+            print(f"KeyError: {e}")
             return model_output
-    
-    return model_output
 
+    return model_output
 
 with gr.Blocks(theme=gr.themes.Monochrome(
                font=[gr.themes.GoogleFont("Montserrat"), "Arial", "sans-serif"],
