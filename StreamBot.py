@@ -13,7 +13,7 @@ def save_file(filepath, content):
 
 def open_file(filepath):
     with open(filepath, 'r', encoding='utf-8', errors='ignore') as infile:
-        return infile.read()
+        return infile.read().replace("\n", " ")
 
 
 rules = open_file('rules.txt')
@@ -36,6 +36,10 @@ MODEL_LIST_EXPLAIN = """## OPENAI System Model
 
 prompts = [
     "You are a helpful AI.",
+    open_file('email_prompt.txt'),
+    open_file('prompt_writing.txt'),
+    # open_file('healthbot4.txt'),
+    open_file('linkedin_posts.txt'),
     "You are a mean AI. Phrase all replies as insults",
     "Based on the user description and any included code write a markdown README file.",
     "As a professional writer please summerize the following text remember to; make use of clear, concise language to convey the information in a straightforward manner, avoiding unnecessary jargon or overly complex phrasing. Maintain a logical flow and coherence throughout the summary, ensuring smooth transitions between sections and chapters..",
